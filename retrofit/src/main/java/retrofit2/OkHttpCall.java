@@ -201,9 +201,9 @@ final class OkHttpCall<T> implements Call<T> {
     rawResponse = rawResponse.newBuilder()
         .body(new NoContentResponseBody(rawBody.contentType(), rawBody.contentLength()))
         .build();
-
+    //need receive response in code 400
     int code = rawResponse.code();
-    if (code < 200 || code >= 300) {
+    if (code < 200 || code >= 500) {
       try {
         // Buffer the entire body to avoid future I/O.
         ResponseBody bufferedBody = Utils.buffer(rawBody);
@@ -213,10 +213,10 @@ final class OkHttpCall<T> implements Call<T> {
       }
     }
 
-    if (code == 204 || code == 205) {
-      rawBody.close();
-      return Response.success(null, rawResponse);
-    }
+      if (code == 204 || code == 205 || code >= 400) {
+          rawBody.close();
+          return Response.success(null, rawResponse);
+      }
 
     ExceptionCatchingResponseBody catchingBody = new ExceptionCatchingResponseBody(rawBody);
     try {
